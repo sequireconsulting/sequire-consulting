@@ -1,0 +1,31 @@
+name: Update Insights from Substack
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # daily at 07:17 Lagos time
+  workflow_dispatch:         # run on demand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Refresh Insights section
+        run: python3 scripts/update_insights.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No new articles."
+          else
+            git config user.name "sequire-site-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add index.html
+            git commit -m "Update Insights from Substack"
+            git push
+          fi
