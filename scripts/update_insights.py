@@ -65,9 +65,24 @@ def read_feed(source):
     if source:
         with open(source, "rb") as f:
             return f.read()
-    req = urllib.request.Request(FEED_URL, headers={"User-Agent": "SequireSiteBot/1.0 (+https://www.sequireconsulting.com)"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read()
+    agents = [
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Feedly/1.0 (+http://www.feedly.com/fetcher.html)",
+        "SequireSiteBot/1.0 (+https://www.sequireconsulting.com)",
+    ]
+    last = None
+    for ua in agents:
+        req = urllib.request.Request(FEED_URL, headers={"User-Agent": ua, "Accept": "application/rss+xml, application/xml, text/xml, */*"})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = resp.read()
+            if b"<channel" in data:
+                return data
+            last = "Response was not an RSS feed"
+        except Exception as e:
+            last = f"{type(e).__name__}: {e}"
+        print(f"Feed request failed with agent '{ua[:30]}': {last}", file=sys.stderr)
+    raise SystemExit(f"Could not read {FEED_URL}. Last error: {last}")
 
 
 def posts(xml_bytes):
