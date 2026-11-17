@@ -708,3 +708,8 @@ h1, h2, h3 { margin: 0; font-weight: 400; color: var(--green); }
 }
 @media (max-width: 900px) { .hero--photo::after { background: rgba(2, 48, 30, .86); } }
 .situation__icon .icon { width: 48px; height: 48px; }
+
+/* Fix: keep the hero photo layer behind the content so buttons and links stay clickable */
+.hero__media { z-index: -2; pointer-events: none; }
+.hero--photo::after { pointer-events: none; }
+.hero--photo .hero__grid { position: relative; z-index: 1; }
